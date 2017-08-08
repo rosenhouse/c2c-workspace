@@ -1,5 +1,4 @@
-# c2c-workspace
-workspace configuration for all things c2c.
+# workspace configuration
 
 # why?
 there are a whole host of tools to setup workstations but none are simple,
@@ -13,18 +12,7 @@ To load iTerm preferences, point to this directory under `iTerm2` >
 
 # assumptions
 - install everything with brew
-- ruby version will be `2.3.0`
+- ruby version will be `2.3.4`
 - neovim is the only vim
 - the less in the vim config, the better
 - we remote pair with [ngrok+tmux](./REMOTE_PAIRING.md) or Screenhero
-
-# some repositories to clone
-- cf-container-networking/toque-scaling
-- cf-container-networking/toque-test-helpers
-- cloudfoundry/bosh-lite
-- cloudfoundry/cf-networking-deployments
-- cloudfoundry/cf-release
-- cloudfoundry/diego-release
-- cloudfoundry/garden-runc-release
-- cloudfoundry-incubator/cf-networking-ci
-- cloudfoundry-incubator/netman-release

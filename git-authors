@@ -1,17 +1,9 @@
 authors:
-  dm: David McClure; dmcclure
-  gl: Genevieve LEsperance; glesperance
   gr: Gabe Rosenhouse; grosenhouse
-  jd: Jay Dunkelberger; ldunkelberger
-  #ms: Mark St.Godard; markstgodard
-  jv: Joachim Valdez; joachimvaldez
-  ac: Angela Chin; achin
-  kw: Krsna Widmer; kwidmer
-  dl: Dennis Leon; dleon
+  #np: Non Pivot
 
 email:
   domain: pivotal.io
 
 email_addresses:
-  #ms: markstgodard@gmail.com
-  jv: valdezj@us.ibm.com
+  #np: non-pivot@example.com

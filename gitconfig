@@ -43,5 +43,5 @@
 	allowed = [eE][xX][aA][mM][pP][lL][eE]
   allowed = REPLACE
 [user]
-	email = cf-container-networking@pivotal.io
-	name = CF Container Networking Team
+	email = anonymous@example.com
+	name = Not a person

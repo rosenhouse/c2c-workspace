@@ -88,9 +88,9 @@ ln -sf $(pwd)/tmux.conf ${HOME}/.tmux.conf
 echo "link bosh"
 ln -sf ${HOME}/go/bin/bosh-cli /usr/local/bin/bosh
 
-echo "Install ruby 2.3.0..."
-rbenv install -s 2.3.0
-rbenv global 2.3.0
+echo "Install ruby 2.3.4..."
+rbenv install -s 2.3.4
+rbenv global 2.3.4
 rm -f ~/.ruby-version
 eval "$(rbenv init -)"
 
