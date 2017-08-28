@@ -1,9 +1,10 @@
 authors:
+  ex: Edwin Xie; exie
   gr: Gabe Rosenhouse; grosenhouse
-  #np: Non Pivot
+  nk: Nino Kodabande
 
 email:
   domain: pivotal.io
 
 email_addresses:
-  #np: non-pivot@example.com
+  nk: nkodabande@suse.com
