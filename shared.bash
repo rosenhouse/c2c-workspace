@@ -114,10 +114,10 @@ function reload() {
 
 function reinstall() {
   local workspace
-  workspace="~/workspace/cf-routing-workspace"
+  workspace="${HOME}/workspace/routing-workspace"
 
   if [[ ! -d "${workspace}" ]]; then
-    git clone https://github.com/rosenhouse/cf-routing-workspace "${workspace}"
+    git clone https://github.com/rosenhouse/workspace "${workspace}"
   fi
 
   pushd "${workspace}" > /dev/null
