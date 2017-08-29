@@ -138,3 +138,5 @@ nnoremap <silent> <space> :nohlsearch<CR>
 
 " fzf
 nnoremap <leader>f :FZF<CR>
+
+set mouse=a
