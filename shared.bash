@@ -234,7 +234,7 @@ gobosh_deploy_bosh_lite ()
 {
   local env_dir=${HOME}/workspace/deployments/lite
 
-  bosh deploy --no-redact -n ~/workspace/cf-deployment/cf-deployment.yml \
+  bosh deploy --no-redact ~/workspace/cf-deployment/cf-deployment.yml \
   -o ~/workspace/cf-deployment/operations/bosh-lite.yml \
   -o ~/workspace/cf-deployment/operations/bypass-cc-bridge.yml \
   -o ~/workspace/cf-deployment/operations/experimental/disable-etcd.yml \
