@@ -2,9 +2,11 @@ authors:
   ex: Edwin Xie; exie
   gr: Gabe Rosenhouse; grosenhouse
   nk: Nino Kodabande
+  jb: Jonathan Berkhahn
 
 email:
   domain: pivotal.io
 
 email_addresses:
+  jb: jaberkha@us.ibm.com
   nk: nkodabande@suse.com
