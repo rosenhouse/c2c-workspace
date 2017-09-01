@@ -32,7 +32,7 @@ function main() {
     export GIT_DUET_ROTATE_AUTHOR=1
 
     # setup path
-    export PATH=$GOBIN:$PATH
+    export PATH=$GOBIN:$PATH:/usr/local/go/bin
 
     export EDITOR=nvim
   }

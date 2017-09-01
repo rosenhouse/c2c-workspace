@@ -22,7 +22,6 @@ brew 'gdbm'
 brew 'gettext'
 brew 'git'
 brew 'git-duet/tap/git-duet'
-brew 'go'
 brew 'jq'
 brew 'lastpass-cli', args: ['with-pinentry']
 brew 'libtool'
