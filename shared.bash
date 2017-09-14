@@ -173,6 +173,8 @@ gobosh_create_bosh_lite ()
     bosh -e vbox upload-stemcell "https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent?v=${STEMCELL_VERSION}"
 
     bosh -e vbox -n update-cloud-config ~/workspace/cf-deployment/bosh-lite/cloud-config.yml
+
+    sudo route add -net "10.244.0.0/16" "192.168.50.6"
 }
 
 gobosh_delete_bosh_lite ()
@@ -227,6 +229,15 @@ gobosh_target_lite ()
   popd 1>/dev/null
 
   export BOSH_DEPLOYMENT=cf;
+}
+
+cf_target_lite()
+{
+  local env_dir=${HOME}/workspace/deployments/lite
+
+  cf api api.bosh-lite.com --skip-ssl-validation
+  adminpw=$(grep cf_admin_password $env_dir/deployment-vars.yml | cut -d ' ' -f2)
+  cf auth admin "$adminpw"
 }
 
 
