@@ -246,6 +246,7 @@ gobosh_deploy_bosh_lite ()
   local env_dir=${HOME}/workspace/deployments/lite
 
   bosh deploy --no-redact ~/workspace/cf-deployment/cf-deployment.yml \
+  -o ~/workspace/cf-deployment/operations/use-compiled-releases.yml \
   -o ~/workspace/cf-deployment/operations/bosh-lite.yml \
   --vars-store $env_dir/deployment-vars.yml \
   -v system_domain=bosh-lite.com
