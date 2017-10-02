@@ -247,8 +247,6 @@ gobosh_deploy_bosh_lite ()
 
   bosh deploy --no-redact ~/workspace/cf-deployment/cf-deployment.yml \
   -o ~/workspace/cf-deployment/operations/bosh-lite.yml \
-  -o ~/workspace/cf-deployment/operations/bypass-cc-bridge.yml \
-  -o ~/workspace/cf-deployment/operations/experimental/disable-etcd.yml \
   --vars-store $env_dir/deployment-vars.yml \
   -v system_domain=bosh-lite.com
 }
