@@ -172,7 +172,7 @@ gobosh_create_bosh_lite ()
     echo "will upload stemcell ${STEMCELL_VERSION}"
     bosh -e vbox upload-stemcell "https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent?v=${STEMCELL_VERSION}"
 
-    bosh -e vbox -n update-cloud-config ~/workspace/cf-deployment/bosh-lite/cloud-config.yml
+    bosh -e vbox -n update-cloud-config ~/workspace/cf-deployment/iaas-support/bosh-lite/cloud-config.yml
 
     sudo route add -net "10.244.0.0/16" "192.168.50.6"
 }
