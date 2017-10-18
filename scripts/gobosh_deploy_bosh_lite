@@ -6,6 +6,9 @@ set -o pipefail
 env_dir=${HOME}/workspace/deployments/lite
 mkdir -p $env_dir/extra-ops-files
 
+extra_ops_files=""
+
+shopt -s nullglob
 pushd $env_dir/extra-ops-files
   for op in $env_dir/extra-ops-files/*
   do
