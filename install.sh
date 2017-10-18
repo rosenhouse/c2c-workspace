@@ -135,6 +135,12 @@ fi
 workspace=${HOME}/workspace
 mkdir -p $workspace
 
+echo "Creating deployments dir"
+mkdir -p $workspace/deployments
+
+echo "Symlink scripts into ~/scripts"
+ln -sfn $PWD/scripts ${HOME}/scripts
+
 echo "Install bosh-target..."
 GOPATH="${HOME}/go" go get -u github.com/cf-container-networking/bosh-target
 
@@ -173,5 +179,17 @@ fi
 echo "Set keyboard repeat rates"
 defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
 defaults write -g KeyRepeat -int 1 # normal minimum is 2 (30 ms)
+
+function clone_workspace_repo_if_not_exist() {
+  local remote=$1
+  local dst_dir="$workspace/$2"
+  echo "Cloning $remote into $dst_dir"
+  if [ ! -d $dst_dir ]; then
+    git clone $remote $dst_dir
+  fi
+}
+
+clone_workspace_repo_if_not_exist "https://github.com/cloudfoundry/bosh-deployment" bosh-deployment
+clone_workspace_repo_if_not_exist "https://github.com/cloudfoundry/cf-deployment" cf-deployment
 
 echo "Workstation setup complete, open a new window to apply all settings"

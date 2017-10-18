@@ -25,14 +25,13 @@ function main() {
 
     # go environment
     export GOPATH=$HOME/go
-    export GOBIN=$GOPATH/bin
 
     # git duet config
     export GIT_DUET_GLOBAL=true
     export GIT_DUET_ROTATE_AUTHOR=1
 
     # setup path
-    export PATH=$GOBIN:$PATH:/usr/local/go/bin
+    export PATH=$GOPATH/bin:$PATH:/usr/local/go/bin:$HOME/scripts
 
     export EDITOR=nvim
   }
@@ -135,67 +134,6 @@ function reinstall() {
 main
 unset -f main
 
-
-gobosh_create_bosh_lite ()
-{
-    local env_dir=${HOME}/workspace/deployments/lite
-
-    bosh create-env ~/workspace/bosh-deployment/bosh.yml \
-    --state $env_dir/state.json \
-    -o ~/workspace/bosh-deployment/virtualbox/cpi.yml \
-    -o ~/workspace/bosh-deployment/virtualbox/outbound-network.yml \
-    -o ~/workspace/bosh-deployment/bosh-lite.yml \
-    -o ~/workspace/bosh-deployment/bosh-lite-runc.yml \
-    -o ~/workspace/bosh-deployment/jumpbox-user.yml \
-    --vars-store $env_dir/creds.yml \
-    -v director_name="Bosh Lite Director" \
-    -v internal_ip=192.168.50.6 \
-    -v internal_gw=192.168.50.1 \
-    -v internal_cidr=192.168.50.0/24 \
-    -v outbound_network_name="NatNetwork"
-
-    bosh -e 192.168.50.6 --ca-cert <(bosh int $env_dir/creds.yml --path /director_ssl/ca) alias-env vbox
-    BOSH_CLIENT="admin"
-    BOSH_CLIENT_SECRET="$(bosh int $env_dir/creds.yml --path /admin_password)"
-    BOSH_ENVIRONMENT="vbox"
-    BOSH_DEPLOYMENT="cf"
-    BOSH_CA_CERT="/tmp/bosh-lite-ca-cert"
-
-    export BOSH_CLIENT
-    export BOSH_CLIENT_SECRET
-    export BOSH_ENVIRONMENT
-    export BOSH_DEPLOYMENT
-    export BOSH_CA_CERT
-    bosh int $env_dir/creds.yml --path /director_ssl/ca > ${BOSH_CA_CERT}
-
-    STEMCELL_VERSION="$(bosh int ~/workspace/cf-deployment/cf-deployment.yml --path=/stemcells/0/version)"
-    echo "will upload stemcell ${STEMCELL_VERSION}"
-    bosh -e vbox upload-stemcell "https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent?v=${STEMCELL_VERSION}"
-
-    bosh -e vbox -n update-cloud-config ~/workspace/cf-deployment/iaas-support/bosh-lite/cloud-config.yml
-
-    sudo route add -net "10.244.0.0/16" "192.168.50.6"
-}
-
-gobosh_delete_bosh_lite ()
-{
-    local env_dir=${HOME}/workspace/deployments/lite
-
-    bosh delete-env ~/workspace/bosh-deployment/bosh.yml \
-    --state $env_dir/state.json \
-    -o ~/workspace/bosh-deployment/virtualbox/cpi.yml \
-    -o ~/workspace/bosh-deployment/virtualbox/outbound-network.yml \
-    -o ~/workspace/bosh-deployment/bosh-lite.yml \
-    -o ~/workspace/bosh-deployment/bosh-lite-runc.yml \
-    -o ~/workspace/bosh-deployment/jumpbox-user.yml \
-    --vars-store $env_dir/creds.yml \
-    -v director_name="Bosh Lite Director" \
-    -v internal_ip=192.168.50.6 \
-    -v internal_gw=192.168.50.1 \
-    -v internal_cidr=192.168.50.0/24 \
-    -v outbound_network_name="NatNetwork"
-}
-
 gobosh_untarget ()
 {
   unset BOSH_DIR
@@ -229,35 +167,4 @@ gobosh_target_lite ()
   popd 1>/dev/null
 
   export BOSH_DEPLOYMENT=cf;
-}
-
-cf_target_lite()
-{
-  local env_dir=${HOME}/workspace/deployments/lite
-
-  cf api api.bosh-lite.com --skip-ssl-validation
-  adminpw=$(grep cf_admin_password $env_dir/deployment-vars.yml | cut -d ' ' -f2)
-  cf auth admin "$adminpw"
-}
-
-
-gobosh_deploy_bosh_lite ()
-{
-  local env_dir=${HOME}/workspace/deployments/lite
-  mkdir -p $env_dir/extra-ops-files
-
-  local extra_ops_files
-  pushd $env_dir/extra-ops-files
-    for op in $env_dir/extra-ops-files/*
-    do
-      extra_ops_files="${extra_ops_files} -o $op"
-    done
-  popd
-
-  bosh deploy --no-redact ~/workspace/cf-deployment/cf-deployment.yml \
-  -o ~/workspace/cf-deployment/operations/use-compiled-releases.yml \
-  -o ~/workspace/cf-deployment/operations/bosh-lite.yml \
-  $extra_ops_files \
-  --vars-store $env_dir/deployment-vars.yml \
-  -v system_domain=bosh-lite.com
 }
