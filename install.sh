@@ -88,9 +88,10 @@ ln -sf $(pwd)/tmux.conf ${HOME}/.tmux.conf
 echo "link bosh"
 ln -sf ${HOME}/go/bin/bosh-cli /usr/local/bin/bosh
 
-echo "Install ruby 2.3.4..."
-rbenv install -s 2.3.4
-rbenv global 2.3.4
+ruby_version=2.4.2
+echo "Install ruby $ruby_version..."
+rbenv install -s $ruby_version
+rbenv global $ruby_version
 rm -f ~/.ruby-version
 eval "$(rbenv init -)"
 
@@ -158,9 +159,6 @@ GOPATH="${HOME}/go" go get -u github.com/maxbrunsfeld/counterfeiter
 echo "Install deployment extractor..."
 GOPATH="${HOME}/go" go get -u github.com/kkallday/deployment-extractor
 
-# echo "Install bbl..."
-# GOPATH="${HOME}/go" go get -u github.com/cloudfoundry/bosh-bootloader/bbl
-
 echo "Install spiff"
 if [ -z "$(which spiff)" ]; then
   wget https://github.com/cloudfoundry-incubator/spiff/releases/download/v1.0.7/spiff_darwin_amd64.zip
@@ -181,5 +179,9 @@ if [ -z "$(fly -v)" ]; then
   mv fly_darwin_amd64 /usr/local/bin/fly
   chmod +x /usr/local/bin/fly
 fi
+
+echo "Set keyboard repeat rates"
+defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
+defaults write -g KeyRepeat -int 1 # normal minimum is 2 (30 ms)
 
 echo "Workstation setup complete, open a new window to apply all settings"
