@@ -85,9 +85,6 @@ ln -sf $(pwd)/git-prompt-colors.sh ${HOME}/.git-prompt-colors.sh
 echo "link global .tmux.conf"
 ln -sf $(pwd)/tmux.conf ${HOME}/.tmux.conf
 
-echo "link bosh"
-ln -sf ${HOME}/go/bin/bosh-cli /usr/local/bin/bosh
-
 ruby_version=2.4.2
 echo "Install ruby $ruby_version..."
 rbenv install -s $ruby_version
@@ -164,13 +161,6 @@ if [ -z "$(which spiff)" ]; then
   wget https://github.com/cloudfoundry-incubator/spiff/releases/download/v1.0.7/spiff_darwin_amd64.zip
   unzip spiff_darwin_amd64.zip -d /usr/local/bin
   rm spiff_darwin_amd64.zip
-fi
-
-echo "Install bosh-init"
-if [ -z "$(bosh-init)" ]; then
-  wget https://s3.amazonaws.com/bosh-init-artifacts/bosh-init-0.0.99-darwin-amd64
-  mv bosh-init-0.0.99-darwin-amd64 /usr/local/bin/bosh-init
-  chmod +x /usr/local/bin/bosh-init
 fi
 
 echo "Install fly"
