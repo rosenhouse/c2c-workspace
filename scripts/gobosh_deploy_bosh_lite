@@ -10,7 +10,7 @@ extra_ops_files=""
 
 shopt -s nullglob
 pushd $env_dir/extra-ops-files
-  for op in $env_dir/extra-ops-files/*
+  for op in $env_dir/extra-ops-files/*.yml
   do
     extra_ops_files="${extra_ops_files} -o $op"
   done
