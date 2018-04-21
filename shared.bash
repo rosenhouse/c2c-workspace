@@ -9,6 +9,7 @@ function main() {
     alias bake="bundle exec rake"
     alias drm='docker rm $(docker ps -a -q)'
     alias drmi='docker rmi $(docker images -q)'
+    alias bosh2=bosh
 
     #git aliases
     alias gst="git status"
@@ -31,7 +32,7 @@ function main() {
     export GIT_DUET_ROTATE_AUTHOR=1
 
     # setup path
-    export PATH=$GOPATH/bin:$PATH:/usr/local/go/bin:$HOME/scripts
+    export PATH=$GOPATH/bin:$PATH:/usr/local/go/bin:$HOME/scripts:$HOME/workspace/routing-ci/scripts
 
     export EDITOR=nvim
   }
@@ -58,15 +59,17 @@ function main() {
   }
 
   function setup_completions() {
-    if [ -d $(brew --prefix)/etc/bash_completion.d ]; then
-      for F in $(brew --prefix)/etc/bash_completion.d/*; do
-        . ${F}
-      done
-    fi
+    [ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
   }
 
   function setup_direnv() {
     eval "$(direnv hook bash)"
+  }
+
+  function setup_bosh_env_scripts() {
+    local bosh_scripts
+    bosh_scripts="${HOME}/workspace/routing-ci/scripts/script_helpers.sh"
+    [[ -s "${bosh_scripts}" ]] && source "${bosh_scripts}"
   }
 
   function setup_gitprompt() {
@@ -76,6 +79,7 @@ function main() {
       export GIT_PROMPT_ONLY_IN_REPO=0
       export GIT_PROMPT_THEME="Custom"
 
+      __GIT_PROMPT_DIR=$(brew --prefix)/opt/bash-git-prompt/share
       source "$(brew --prefix)/opt/bash-git-prompt/share/gitprompt.sh"
     fi
   }
@@ -86,7 +90,14 @@ function main() {
     [[ -s "${colorscheme}" ]] && source "${colorscheme}"
   }
 
+  function setup_gpg_config() {
+    local status
+    status=$(gpg --card-status &> /dev/null; echo $?)
 
+    if [[ "$status" == "0" ]]; then
+      export SSH_AUTH_SOCK="${HOME}/.gnupg/S.gpg-agent.ssh"
+    fi
+  }
 
   local dependencies
     dependencies=(
@@ -99,6 +110,8 @@ function main() {
         completions
         direnv
         gitprompt
+        gpg_config
+        bosh_env_scripts
       )
 
   for dependency in ${dependencies[@]}; do
@@ -134,37 +147,36 @@ function reinstall() {
 main
 unset -f main
 
-gobosh_untarget ()
+
+cf_seed()
 {
-  unset BOSH_DIR
-  unset BOSH_USER
-  unset BOSH_PASSWORD
-  unset BOSH_ENVIRONMENT
-  unset BOSH_GW_HOST
-  unset BOSH_GW_PRIVATE_KEY
-  unset BOSH_CA_CERT
-  unset BOSH_DEPLOYMENT
-  unset BOSH_CLIENT
-  unset BOSH_CLIENT_SECRET
+  cf create-org o
+  cf create-space -o o s
+  cf target -o o -s s
 }
 
-gobosh_target_lite ()
-{
-  gobosh_untarget
-  local env_dir=${HOME}/workspace/deployments/lite
 
-  pushd $env_dir >/dev/null
-    BOSH_CLIENT="admin"
-    BOSH_CLIENT_SECRET="$(bosh int ./creds.yml --path /admin_password)"
-    BOSH_ENVIRONMENT="vbox"
-    BOSH_CA_CERT=/tmp/bosh-lite-ca-cert
+gimme_certs () {
+	local common_name
+	common_name="${1:-fake}"
+	local ca_common_name
+	ca_common_name="${2:-${common_name}_ca}"
+	local depot_path
+	depot_path="${3:-fake_cert_stuff}"
+	certstrap --depot-path ${depot_path} init --passphrase '' --common-name "${ca_common_name}"
+	certstrap --depot-path ${depot_path} request-cert --passphrase '' --common-name "${common_name}"
+	certstrap --depot-path ${depot_path} sign --passphrase '' --CA "${ca_common_name}" "${common_name}"
+}
 
-    export BOSH_CLIENT
-    export BOSH_CLIENT_SECRET
-    export BOSH_ENVIRONMENT
-    export BOSH_CA_CERT
-    bosh int ./creds.yml --path /director_ssl/ca > $BOSH_CA_CERT
-  popd 1>/dev/null
+bbl_gcp_creds () {
+  lpass show "BBL GCP Creds" --notes
+}
 
-  export BOSH_DEPLOYMENT=cf;
+eval_bbl_gcp_creds () {
+  eval "$(bbl_gcp_creds)"
+}
+
+pullify () {
+  git config --add remote.origin.fetch '+refs/pull/*/head:refs/remotes/origin/pr/*'
+  git fetch origin
 }

@@ -3,6 +3,15 @@
 set -e
 set -u
 
+function clone_if_not_exist() {
+  local remote=$1
+  local dst_dir="$2"
+  echo "Cloning $remote into $dst_dir"
+  if [ ! -d $dst_dir ]; then
+    git clone $remote $dst_dir
+  fi
+}
+
 function confirm() {
   read -r -p "Are you sure? [y/N] " response
   case $response in
@@ -33,33 +42,45 @@ ln -sf $(pwd)/Brewfile ${HOME}/.Brewfile
 brew bundle --global
 brew bundle cleanup
 
-echo "Updating pip"
+echo "Install gpg..."
+if ! [[ -d "${HOME}/.gnupg" ]]; then
+  mkdir "${HOME}/.gnupg"
+  chmod 0700 "${HOME}/.gnupg"
+
+cat << EOF > "${HOME}/.gnupg/gpg-agent.conf"
+default-cache-ttl 3600
+pinentry-program /usr/local/bin/pinentry-mac
+enable-ssh-support
+EOF
+
+  gpg-connect-agent reloadagent /bye > /dev/null
+fi
+
+if [ -f ${HOME}/.config/vim ]; then
+  echo "You already have luan/vimfiles installed. Updating..."
+  ${HOME}/.config/vim/update
+else
+  clone_if_not_exist https://github.com/luan/vimfiles "${HOME}/.config/vim"
+  ${HOME}/.config/vim/install
+fi
+
+set +e
+  tmux list-sessions # this exits 1 if there are no sessions
+
+  if [ $? -eq 0 ]; then
+    echo "Please kill all of your tmux sessions and run this script again."
+    exit 1
+  else
+    clone_if_not_exist "https://github.com/luan/tmuxfiles" "${HOME}/.config/tmux"
+    ${HOME}/.config/tmux/install
+  fi
+set -e
+
+echo "Update pip..."
 pip3 install --upgrade pip
 
-echo "Install python-client for neovim"
+echo "Install python-client for neovim..."
 pip3 install neovim
-
-echo "Install the plug vim plugin manager..."
-curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs \
-  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-echo "Symlink the vimrc to .config/nvim/init.vim..."
-ln -sf $(pwd)/vimrc ${HOME}/.config/nvim/init.vim
-
-echo "Run the vim plugin install..."
-nvim -c "PlugInstall" -c "qall" --headless
-
-echo "Update vim plugins..."
-nvim -c "PlugUpdate" -c "qall" --headless
-
-echo "Copy snippets..."
-mkdir -p ${HOME}/.vim/UltiSnips
-
-echo "Symlink the go.snippets to .vim/UltiSnips..."
-ln -sf $(pwd)/go.snippets ${HOME}/.vim/UltiSnips
-
-echo "Install the vim go binaries..."
-nvim -c "GoInstallBinaries" -c "qall!" --headless /tmp/foo.go
 
 echo "Add yamllint for neomake..."
 pip3 install -q yamllint
@@ -82,9 +103,6 @@ ln -sf $(pwd)/global-gitignore ${HOME}/.global-gitignore
 echo "link global .git-prompt-colors.sh"
 ln -sf $(pwd)/git-prompt-colors.sh ${HOME}/.git-prompt-colors.sh
 
-echo "link global .tmux.conf"
-ln -sf $(pwd)/tmux.conf ${HOME}/.tmux.conf
-
 ruby_version=2.4.2
 echo "Install ruby $ruby_version..."
 rbenv install -s $ruby_version
@@ -97,9 +115,6 @@ ln -sf $(pwd)/gemrc ${HOME}/.gemrc
 
 echo "Install the bundler gem..."
 gem install bundler
-
-echo "Install the uaac gem..."
-gem install cf-uaac
 
 echo "Cloning colorschemes..."
 if [ ! -d ${HOME}/.config/colorschemes ]; then
@@ -135,9 +150,6 @@ fi
 workspace=${HOME}/workspace
 mkdir -p $workspace
 
-echo "Creating deployments dir"
-mkdir -p $workspace/deployments
-
 echo "Symlink scripts into ~/scripts"
 ln -sfn $PWD/scripts ${HOME}/scripts
 
@@ -159,37 +171,28 @@ GOPATH="${HOME}/go" go get -u github.com/onsi/gomega
 echo "Install counterfeiter..."
 GOPATH="${HOME}/go" go get -u github.com/maxbrunsfeld/counterfeiter
 
-echo "Install deployment extractor..."
-GOPATH="${HOME}/go" go get -u github.com/kkallday/deployment-extractor
-
-echo "Install spiff"
-if [ -z "$(which spiff)" ]; then
-  wget https://github.com/cloudfoundry-incubator/spiff/releases/download/v1.0.7/spiff_darwin_amd64.zip
-  unzip spiff_darwin_amd64.zip -d /usr/local/bin
-  rm spiff_darwin_amd64.zip
-fi
-
 echo "Install fly"
 if [ -z "$(fly -v)" ]; then
-  wget https://github.com/concourse/concourse/releases/download/v2.4.0/fly_darwin_amd64
+  wget https://github.com/concourse/concourse/releases/download/v3.9.2/fly_darwin_amd64
   mv fly_darwin_amd64 /usr/local/bin/fly
   chmod +x /usr/local/bin/fly
 fi
 
 echo "Set keyboard repeat rates"
-defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
-defaults write -g KeyRepeat -int 1 # normal minimum is 2 (30 ms)
+defaults write -g InitialKeyRepeat -int 25 # normal minimum is 15 (225 ms)
+defaults write -g KeyRepeat -int 2 # normal minimum is 2 (30 ms)
 
-function clone_workspace_repo_if_not_exist() {
-  local remote=$1
-  local dst_dir="$workspace/$2"
-  echo "Cloning $remote into $dst_dir"
-  if [ ! -d $dst_dir ]; then
-    git clone $remote $dst_dir
-  fi
-}
+clone_if_not_exist "git@github.com:cloudfoundry/routing-team-checklists" "${HOME}/workspace/routing-team-checklists"
+clone_if_not_exist "https://github.com/cloudfoundry/bosh-deployment" "${HOME}/workspace/bosh-deployment"
+clone_if_not_exist "https://github.com/cloudfoundry/cf-deployment" "${HOME}/workspace/cf-deployment"
+clone_if_not_exist "https://github.com/cloudfoundry/routing-ci" "${HOME}/workspace/routing-ci"
+clone_if_not_exist "https://github.com/cloudfoundry/routing-release" "${HOME}/workspace/routing-release"
+clone_if_not_exist "git@github.com:cloudfoundry/deployments-routing" "${HOME}/workspace/deployments-routing"
+clone_if_not_exist "https://github.com/cloudfoundry/istio-release" "${HOME}/workspace/istio-release"
+clone_if_not_exist "https://github.com/cloudfoundry/istio-workspace" "${HOME}/workspace/istio-workspace"
 
-clone_workspace_repo_if_not_exist "https://github.com/cloudfoundry/bosh-deployment" bosh-deployment
-clone_workspace_repo_if_not_exist "https://github.com/cloudfoundry/cf-deployment" cf-deployment
+echo "Configure databases"
+./scripts/setup_routing_dbs
 
 echo "Workstation setup complete, open a new window to apply all settings"
+
